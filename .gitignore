@@ -1,7 +1,0 @@
-.DS_STORE
-.venv 
-.env 
-analysis/*
-data/*
-courses/*
-data/Hotel_Reviews_Clean.csv
