@@ -1,2 +1,4 @@
 .DS_STORE
 .venv 
+.env 
+analysis/*
