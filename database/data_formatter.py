@@ -4,7 +4,7 @@ raw_data_location = "data/Hotel_Reviews_Raw.csv"
 cleaned_data_location = "data/Hotel_Reviews_Clean.csv"
 delete_columns = ["Hotel_Address", "Tags", "days_since_review", "lat", "lng"]
 
-class DataPreprocessor:
+class DataFormatter:
     def __init__(self, 
                  raw_data_location=raw_data_location,
                  cleaned_data_location=cleaned_data_location,
