@@ -4,3 +4,7 @@
 analysis/*
 data/*
 courses/*
+*/__pycache__.py 
+*/__init__.py 
+/miscelanious/*
+preprocessing/output.csv

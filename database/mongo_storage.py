@@ -83,7 +83,8 @@ class MongoDatabaseClient:
         except Exception as e:
             print("Something went wrong creating indexes", e)
 
-    def init_mongodb_connection():
+    def init_mongodb_connection(self):
         client = MongoClient("mongodb://localhost:27017/")
         db = client["hotel_reviews"]
+        print(db['reviews'])
         return db["reviews"]

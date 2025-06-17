@@ -18,4 +18,4 @@ class DataFormatter:
         df = pd.read_csv(raw_data_location)
         df.drop(columns=self.delete_columns, inplace=True)
         df.head()
-        df.to_csv(cleaned_data_location)
+        df.to_csv(cleaned_data_location, index=False)

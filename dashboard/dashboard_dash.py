@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import dash
 from dash import dcc, html, Input, Output, callback
 import plotly.express as px
@@ -8,7 +12,7 @@ import pandas as pd
 
 from database.mongo_storage import MongoDatabaseClient
 
-client = MongoDatabaseClient
+client = MongoDatabaseClient()
 collection = client.init_mongodb_connection()
 
 # Initialize Dash app
@@ -19,87 +23,84 @@ app.title = "Hotel Reviews Dashboard"
 app.layout = html.Div([
     html.Div([
         html.H1("Hotel Reviews Dashboard", 
-                style={'textAlign': 'center', 'marginBottom': 30, 'color': '#2c3e50'}),
-        html.P("This dashboard allows you to filter and explore hotel reviews stored in MongoDB. "
-               "Use the filters below to narrow down your search by hotel name, reviewer nationality, and review score.",
-               style={'textAlign': 'center', 'marginBottom': 30, 'color': '#7f8c8d'})
-    ]),
+                style={'textAlign': 'center', 'marginBottom': 20, 'color': '#2c3e50', 'fontSize': '2.5rem'}),
+        html.P("Filter and explore hotel reviews stored in MongoDB.",
+               style={'textAlign': 'center', 'marginBottom': 40, 'color': '#7f8c8d', 'fontSize': '1.1rem'})
+    ], style={'padding': '20px 0'}),
     
-    # Filters Section
+    # Main content container
     html.Div([
-        html.H3("Filters & Controls", style={'marginBottom': 20, 'color': '#34495e'}),
-        
+        # Filters Section
         html.Div([
-            html.Label("Hotel Name:", style={'fontWeight': 'bold', 'marginBottom': 5}),
-            dcc.Input(
-                id='hotel-name-input',
-                type='text',
-                placeholder='Enter hotel name...',
-                style={'width': '100%', 'padding': '8px', 'marginBottom': 15}
-            )
-        ]),
-        
-        html.Div([
-            html.Label("Nationality:", style={'fontWeight': 'bold', 'marginBottom': 5}),
-            dcc.Input(
-                id='nationality-input',
-                type='text',
-                placeholder='Enter nationality...',
-                style={'width': '100%', 'padding': '8px', 'marginBottom': 15}
-            )
-        ]),
-        
-        html.Div([
-            html.Label("Score Range:", style={'fontWeight': 'bold', 'marginBottom': 5}),
-            dcc.RangeSlider(
-                id='score-range-slider',
-                min=0,
-                max=10,
-                step=0.1,
-                value=[0, 10],
-                marks={i: str(i) for i in range(0, 11)},
-                tooltip={"placement": "bottom", "always_visible": True}
-            )
-        ], style={'marginBottom': 20})
-    ], style={
-        'width': '25%', 
-        'display': 'inline-block', 
-        'verticalAlign': 'top',
-        'padding': '20px',
-        'backgroundColor': '#f8f9fa',
-        'borderRadius': '10px',
-        'margin': '10px'
-    }),
-    
-    # Main Content Section
-    html.Div([
-        # Metrics Cards
-        html.Div(id='metrics-cards', style={'marginBottom': 30}),
-        
-        # Charts Section
-        html.Div([
-            html.Div([
-                dcc.Graph(id='score-distribution-chart')
-            ], style={'width': '50%', 'display': 'inline-block'}),
+            html.H3("Filters", style={'marginBottom': 25, 'color': '#2c3e50'}),
             
             html.Div([
-                dcc.Graph(id='top-hotels-chart')
-            ], style={'width': '50%', 'display': 'inline-block'})
-        ]),
+                html.Label("Hotel Name:", style={'fontWeight': 'bold', 'marginBottom': 8, 'display': 'block'}),
+                dcc.Input(
+                    id='hotel-name-input',
+                    type='text',
+                    placeholder='Enter hotel name...',
+                    style={'width': '100%', 'padding': '10px', 'marginBottom': 20, 'border': '1px solid #ddd', 'borderRadius': '4px'}
+                )
+            ]),
+            
+            html.Div([
+                html.Label("Nationality:", style={'fontWeight': 'bold', 'marginBottom': 8, 'display': 'block'}),
+                dcc.Input(
+                    id='nationality-input',
+                    type='text',
+                    placeholder='Enter nationality...',
+                    style={'width': '100%', 'padding': '10px', 'marginBottom': 20, 'border': '1px solid #ddd', 'borderRadius': '4px'}
+                )
+            ]),
+            
+            html.Div([
+                html.Label("Score Range:", style={'fontWeight': 'bold', 'marginBottom': 8, 'display': 'block'}),
+                dcc.RangeSlider(
+                    id='score-range-slider',
+                    min=0,
+                    max=10,
+                    step=0.1,
+                    value=[0, 10],
+                    marks={i: str(i) for i in range(0, 11)},
+                    tooltip={"placement": "bottom", "always_visible": True}
+                )
+            ], style={'marginBottom': 20})
+        ], style={
+            'width': '300px', 
+            'padding': '25px',
+            'backgroundColor': '#f8f9fa',
+            'borderRadius': '8px',
+            'marginRight': '25px',
+            'height': 'fit-content'
+        }),
         
+        # Charts and data section
         html.Div([
-            dcc.Graph(id='top-nationalities-chart')
-        ], style={'width': '100%', 'marginTop': 20}),
+            # Metrics row
+            html.Div(id='metrics-cards', style={'marginBottom': 25}),
+            
+            # Charts row
+            html.Div([
+                html.Div([
+                    dcc.Graph(id='score-distribution-chart')
+                ], style={'width': '48%', 'display': 'inline-block', 'marginRight': '4%'}),
+                
+                html.Div([
+                    dcc.Graph(id='top-hotels-chart')
+                ], style={'width': '48%', 'display': 'inline-block'})
+            ]),
+            
+            html.Div([
+                dcc.Graph(id='top-nationalities-chart')
+            ], style={'marginTop': 20}),
+            
+            # Data Table
+            html.Div(id='data-table', style={'marginTop': 25})
+            
+        ], style={'flex': '1'})
         
-        # Data Table
-        html.Div(id='data-table', style={'marginTop': 30})
-        
-    ], style={
-        'width': '70%', 
-        'display': 'inline-block', 
-        'verticalAlign': 'top',
-        'padding': '20px'
-    })
+    ], style={'display': 'flex', 'maxWidth': '1200px', 'margin': '0 auto', 'padding': '0 20px'})
 ])
 
 def query_mongodb(hotel_name=None, nationality=None, min_score=0, max_score=10):
@@ -170,39 +171,39 @@ def update_dashboard(hotel_name, nationality, score_range):
     # Create metrics cards
     metrics_cards = html.Div([
         html.Div([
-            html.H3(str(metrics['total_reviews']), style={'margin': 0, 'color': '#29b5e8'}),
+            html.H3(f"{metrics['total_reviews']:,}", style={'margin': 0, 'color': '#3498db', 'fontSize': '2rem'}),
             html.P("Total Reviews", style={'margin': 0, 'color': '#7f8c8d'})
         ], style={
             'textAlign': 'center', 'padding': '20px', 'backgroundColor': 'white',
-            'borderRadius': '10px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'width': '22%', 'display': 'inline-block', 'margin': '1%'
+            'borderRadius': '8px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'width': '23%', 'display': 'inline-block', 'margin': '1%'
         }),
         
         html.Div([
-            html.H3(str(metrics['avg_score']), style={'margin': 0, 'color': '#FF9F36'}),
+            html.H3(str(metrics['avg_score']), style={'margin': 0, 'color': '#e74c3c', 'fontSize': '2rem'}),
             html.P("Average Score", style={'margin': 0, 'color': '#7f8c8d'})
         ], style={
             'textAlign': 'center', 'padding': '20px', 'backgroundColor': 'white',
-            'borderRadius': '10px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'width': '22%', 'display': 'inline-block', 'margin': '1%'
+            'borderRadius': '8px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'width': '23%', 'display': 'inline-block', 'margin': '1%'
         }),
         
         html.Div([
-            html.H3(metrics['most_common_nationality'], style={'margin': 0, 'color': '#D45B90', 'fontSize': '16px'}),
-            html.P("Most Common Nationality", style={'margin': 0, 'color': '#7f8c8d'})
+            html.H3(metrics['most_common_nationality'][:20], style={'margin': 0, 'color': '#9b59b6', 'fontSize': '1.2rem'}),
+            html.P("Top Nationality", style={'margin': 0, 'color': '#7f8c8d'})
         ], style={
             'textAlign': 'center', 'padding': '20px', 'backgroundColor': 'white',
-            'borderRadius': '10px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'width': '22%', 'display': 'inline-block', 'margin': '1%'
+            'borderRadius': '8px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'width': '23%', 'display': 'inline-block', 'margin': '1%'
         }),
         
         html.Div([
-            html.H3(metrics['most_reviewed_hotel'], style={'margin': 0, 'color': '#7D44CF', 'fontSize': '16px'}),
-            html.P("Most Reviewed Hotel", style={'margin': 0, 'color': '#7f8c8d'})
+            html.H3(metrics['most_reviewed_hotel'][:20], style={'margin': 0, 'color': '#f39c12', 'fontSize': '1.2rem'}),
+            html.P("Top Hotel", style={'margin': 0, 'color': '#7f8c8d'})
         ], style={
             'textAlign': 'center', 'padding': '20px', 'backgroundColor': 'white',
-            'borderRadius': '10px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'width': '22%', 'display': 'inline-block', 'margin': '1%'
+            'borderRadius': '8px', 'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+            'width': '23%', 'display': 'inline-block', 'margin': '1%'
         })
     ])
     
@@ -213,12 +214,20 @@ def update_dashboard(hotel_name, nationality, score_range):
         score_dist_fig = px.bar(
             x=list(score_counts.keys()),
             y=list(score_counts.values()),
-            title="Reviewer Score Distribution",
-            labels={'x': 'Score', 'y': 'Count'}
+            title="Score Distribution",
+            labels={'x': 'Score', 'y': 'Count'},
+            color_discrete_sequence=['#3498db']
         )
-        score_dist_fig.update_layout(showlegend=False)
+        score_dist_fig.update_layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font={'size': 12},
+            title={'x': 0.5},
+            showlegend=False
+        )
     else:
-        score_dist_fig = px.bar(title="Reviewer Score Distribution - No Data")
+        score_dist_fig = px.bar(title="Score Distribution - No Data")
+        score_dist_fig.update_layout(plot_bgcolor='white', paper_bgcolor='white')
     
     # Top Hotels Chart
     if data:
@@ -226,14 +235,23 @@ def update_dashboard(hotel_name, nationality, score_range):
         hotel_counts = Counter(hotels).most_common(10)
         top_hotels_fig = px.bar(
             x=[count for _, count in hotel_counts],
-            y=[hotel for hotel, _ in hotel_counts],
+            y=[hotel[:25] + '...' if len(hotel) > 25 else hotel for hotel, _ in hotel_counts],
             orientation='h',
-            title="Top 10 Hotels by Number of Reviews",
-            labels={'x': 'Number of Reviews', 'y': 'Hotel'}
+            title="Top Hotels",
+            labels={'x': 'Reviews', 'y': 'Hotel'},
+            color_discrete_sequence=['#e74c3c']
         )
-        top_hotels_fig.update_layout(showlegend=False, yaxis={'categoryorder': 'total ascending'})
+        top_hotels_fig.update_layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font={'size': 12},
+            title={'x': 0.5},
+            yaxis={'categoryorder': 'total ascending'},
+            showlegend=False
+        )
     else:
-        top_hotels_fig = px.bar(title="Top 10 Hotels - No Data")
+        top_hotels_fig = px.bar(title="Top Hotels - No Data")
+        top_hotels_fig.update_layout(plot_bgcolor='white', paper_bgcolor='white')
     
     # Top Nationalities Chart
     if data:
@@ -242,43 +260,52 @@ def update_dashboard(hotel_name, nationality, score_range):
         top_nationalities_fig = px.bar(
             x=[nationality for nationality, _ in nationality_counts],
             y=[count for _, count in nationality_counts],
-            title="Top 10 Reviewer Nationalities",
-            labels={'x': 'Nationality', 'y': 'Count'}
+            title="Top Nationalities",
+            labels={'x': 'Nationality', 'y': 'Count'},
+            color_discrete_sequence=['#9b59b6']
         )
-        top_nationalities_fig.update_layout(showlegend=False)
+        top_nationalities_fig.update_layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font={'size': 12},
+            title={'x': 0.5},
+            showlegend=False
+        )
     else:
-        top_nationalities_fig = px.bar(title="Top 10 Nationalities - No Data")
+        top_nationalities_fig = px.bar(title="Top Nationalities - No Data")
+        top_nationalities_fig.update_layout(plot_bgcolor='white', paper_bgcolor='white')
     
-    # Data Table (show first 100 records)
+    # Simple Data Table
     if data:
-        table_data = data[:100]  # Limit to first 100 records for performance
-        table_rows = []
+        table_data = data[:20]  # Show 20 records
         
-        # Table header
         if table_data:
-            headers = ['Hotel Name', 'Reviewer Nationality', 'Reviewer Score', 'Review']
-            table_header = html.Tr([html.Th(header) for header in headers])
+            table_rows = []
+            headers = ['Hotel Name', 'Nationality', 'Score', 'Review']
+            
+            # Table header
+            header_style = {'backgroundColor': '#f8f9fa', 'fontWeight': 'bold', 'padding': '12px', 'border': '1px solid #dee2e6'}
+            table_header = html.Tr([html.Th(header, style=header_style) for header in headers])
             
             # Table rows
             for doc in table_data:
+                cell_style = {'padding': '12px', 'border': '1px solid #dee2e6', 'fontSize': '14px'}
                 row = html.Tr([
-                    html.Td(doc.get('Hotel_Name', 'N/A')),
-                    html.Td(doc.get('Reviewer_Nationality', 'N/A')),
-                    html.Td(doc.get('Reviewer_Score', 'N/A')),
-                    html.Td(doc.get('Positive_Review', 'N/A')[:100] + '...' if doc.get('Positive_Review') and len(doc.get('Positive_Review', '')) > 100 else doc.get('Positive_Review', 'N/A'))
+                    html.Td(doc.get('Hotel_Name', 'N/A')[:30], style=cell_style),
+                    html.Td(doc.get('Reviewer_Nationality', 'N/A'), style=cell_style),
+                    html.Td(doc.get('Reviewer_Score', 'N/A'), style=cell_style),
+                    html.Td((doc.get('Positive_Review', 'N/A')[:60] + '...' 
+                            if doc.get('Positive_Review') and len(doc.get('Positive_Review', '')) > 60 
+                            else doc.get('Positive_Review', 'N/A')), style=cell_style)
                 ])
                 table_rows.append(row)
             
             data_table = html.Div([
-                html.H3("Review Data (First 100 records)", style={'marginBottom': 20}),
+                html.H3("Sample Reviews", style={'marginBottom': 15, 'color': '#2c3e50'}),
                 html.Table([
                     html.Thead(table_header),
                     html.Tbody(table_rows)
-                ], style={
-                    'width': '100%',
-                    'borderCollapse': 'collapse',
-                    'border': '1px solid #ddd'
-                })
+                ], style={'width': '100%', 'borderCollapse': 'collapse', 'backgroundColor': 'white', 'borderRadius': '8px'})
             ])
         else:
             data_table = html.Div("No data available")
